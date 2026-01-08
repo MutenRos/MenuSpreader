@@ -1,0 +1,35 @@
+{
+  "name": "menu-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "localtunnel": "^2.0.2",
+    "next": "16.1.1",
+    "qrcode-terminal": "^0.12.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "twilio": "^5.11.2",
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "ngrok": "^5.0.0-beta.2",
+    "prisma": "^6.19.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
