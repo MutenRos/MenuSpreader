@@ -7,18 +7,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563EB;
-            --primary-dark: #1D4ED8;
-            --text: #1E293B;
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --secondary: #1E293B;
+            --text: #0F172A;
             --text-light: #64748B;
             --bg: #F8FAFC;
             --white: #FFFFFF;
+            --paypal: #0070BA;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -31,13 +34,14 @@
 
         /* Nav */
         nav {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid #E2E8F0;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            transition: all 0.3s ease;
         }
 
         .nav-container {
@@ -50,20 +54,29 @@
         }
 
         .logo {
-            font-weight: 800;
+            font-weight: 900;
             font-size: 1.5rem;
-            color: var(--primary);
+            color: var(--secondary);
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            background: linear-gradient(135deg, #1E293B, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
         }
 
         .nav-links a {
             text-decoration: none;
             color: var(--text-light);
             font-weight: 600;
-            margin-left: 2rem;
+            font-size: 0.95rem;
             transition: color 0.3s;
         }
 
@@ -71,12 +84,27 @@
             color: var(--primary);
         }
 
+        .nav-donate {
+            background-color: #FFC439;
+            color: #2C2E2F !important;
+            padding: 0.5rem 1.2rem;
+            border-radius: 99px;
+            font-weight: 700 !important;
+            transition: transform 0.2s;
+        }
+        
+        .nav-donate:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(255, 196, 57, 0.4);
+        }
+
         /* Hero */
         .hero {
-            padding: 160px 2rem 100px;
+            padding: 180px 2rem 100px;
             text-align: center;
-            background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%);
+            background: radial-gradient(circle at 50% 0%, #EFF6FF 0%, #FFFFFF 100%);
         }
+
 
         .hero h1 {
             font-size: 4rem;
@@ -211,9 +239,10 @@
         <div class="nav-container">
             <a href="#" class="logo">🚀 MenuSpreader</a>
             <div class="nav-links">
-                <a href="#features">Características</a>
+                <a href="#features">Ventajas</a>
                 <a href="#download">Descargar</a>
-                <a href="https://github.com/MutenRos/MenuSpreader">GitHub</a>
+                <a href="https://github.com/MutenRos/MenuSpreader" target="_blank">Cod. Fuente</a>
+                <a href="https://paypal.me/MutenRos" target="_blank" class="nav-donate">☕ Invítame a un café</a>
             </div>
         </div>
     </nav>
@@ -284,10 +313,28 @@
         </div>
     </section>
 
-    <section id="download" style="background: var(--primary); color: white; padding: 100px 2rem; text-align: center;">
-        <h2 style="margin-bottom: 1rem; font-size: 2.5rem;">Empieza Hoy Mismo</h2>
-        <p style="margin-bottom: 2rem; opacity: 0.9;">Únete a los restaurantes que ya automatizan su marketing diario.</p>
-        <a href="https://github.com/MutenRos/MenuSpreader/releases/latest" style="background: white; color: var(--primary); padding: 1rem 3rem; border-radius: 50px; text-decoration: none; font-weight: 800;">Descargar v1.0</a>
+    <section id="download" style="background: linear-gradient(135deg, var(--secondary), #0F172A); color: white; padding: 100px 2rem; text-align: center; position: relative; overflow: hidden;">
+        <!-- Background Elements -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%); pointer-events: none;"></div>
+        
+        <div style="position: relative; z-index: 10; max-width: 800px; margin: 0 auto;">
+            <h2 style="margin-bottom: 1.5rem; font-size: 3rem; font-weight: 800; letter-spacing: -0.02em;">Digitaliza tu Negocio Hoy</h2>
+            <p style="margin-bottom: 3rem; font-size: 1.2rem; color: #94A3B8;">
+                Descarga MenuSpreader v1.0, descomprime el ZIP y empieza a funcionar sin instalaciones complejas.
+            </p>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="https://github.com/MutenRos/MenuSpreader/releases/latest" style="background: var(--primary); color: white; padding: 1.2rem 3rem; border-radius: 99px; text-decoration: none; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 30px -10px var(--primary); transition: transform 0.2s;">
+                    ⬇️ Descargar Gratis
+                </a>
+                <a href="https://paypal.me/MutenRos" target="_blank" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; padding: 1.2rem 3rem; border-radius: 99px; text-decoration: none; font-weight: 600; font-size: 1.1rem; border: 1px solid rgba(255,255,255,0.2); transition: background 0.2s;">
+                    ❤️ Donar con PayPal
+                </a>
+            </div>
+            <p style="margin-top: 2rem; font-size: 0.9rem; color: #64748B;">
+                Software Open Source. Si te es útil, considera apoyar su desarrollo.
+            </p>
+        </div>
     </section>
 
     <footer>
