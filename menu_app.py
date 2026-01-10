@@ -15,13 +15,30 @@ import webbrowser # Added for donation link
 
 import zipfile # Added for zip extraction
 
+# Determine application path for robust file handling (Fixes PermissionError in protected folders)
+if getattr(sys, 'frozen', False):
+    APP_DIR = os.path.dirname(sys.executable)
+else:
+    APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Ensure we write logs and DB to a writable location (The App Directory in AppData)
+LOG_PATH = os.path.join(APP_DIR, 'app.log')
+DB_PATH = os.path.join(APP_DIR, "bar_data.db")
+
 # Setup logging
-logging.basicConfig(filename='app.log', level=logging.DEBUG, 
-                    format='%(asctime)s %(levelname)s:%(message)s')
+try:
+    logging.basicConfig(filename=LOG_PATH, level=logging.DEBUG, 
+                        format='%(asctime)s %(levelname)s:%(message)s')
+except PermissionError:
+    # Fallback to temp dir if App dir is not writable (e.g. Program Files)
+    import tempfile
+    LOG_PATH = os.path.join(tempfile.gettempdir(), 'MenuSpreader.log')
+    logging.basicConfig(filename=LOG_PATH, level=logging.DEBUG, 
+                        format='%(asctime)s %(levelname)s:%(message)s')
 
 BOT_API_URL = "http://localhost:3001"
-DB_PATH = "bar_data.db"
-CURRENT_VERSION = "v1.0.5"
+# DB_PATH is already defined above
+CURRENT_VERSION = "v1.0.6"
 REPO_OWNER = "MutenRos" # Cambiar si tu usuario de GitHub es diferente
 REPO_NAME = "MenuSpreader"
 
