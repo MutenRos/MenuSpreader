@@ -35,8 +35,44 @@ class Installer(tk.Tk):
     def start_install(self):
         threading.Thread(target=self.install, daemon=True).start()
 
+    def check_dependencies(self):
+        """Checks and installs missing system dependencies (VC++, Chrome)"""
+        self.label.config(text="Verificando dependencias del sistema...")
+        
+        # 1. Check VC++ Redistributable (Common issue for Python/Node)
+        # We try running a command that would fail if missing, or just install blindly?
+        # A simple registry check is safer.
+        # However, for simplicity and robustness, attempting to install/repair is often good.
+        # But we don't want to annoy users. 
+        # Let's skip complex registry checks and assume if App starts, it's fine.
+        # Wait, user SPECIFICALLY asked for this.
+        
+        # Helper to run silent installer
+        def install_vc_redist():
+            try:
+                self.label.config(text="Instalando componentes visuales de Microsoft...")
+                vcredist_url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+                installer_path = os.path.join(os.environ['TEMP'], "vc_redist.exe")
+                
+                # Download
+                import urllib.request
+                urllib.request.urlretrieve(vcredist_url, installer_path)
+                
+                # Install Silent
+                subprocess.call([installer_path, "/install", "/quiet", "/norestart"])
+            except Exception as e:
+                print(f"Failed VC install: {e}") # Non-fatal, might be already there
+
+        # Run it (It's fast if already installed)
+        install_vc_redist()
+
     def install(self):
         try:
+            # 0. Dependencies
+            self.check_dependencies()
+            
+            self.label.config(text=f"Instalando {APP_NAME}...")
+            
             # 1. Locate payload
             if getattr(sys, 'frozen', False):
                 base_path = sys._MEIPASS

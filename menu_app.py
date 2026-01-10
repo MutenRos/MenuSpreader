@@ -21,7 +21,7 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG,
 
 BOT_API_URL = "http://localhost:3001"
 DB_PATH = "bar_data.db"
-CURRENT_VERSION = "v1.0.4"
+CURRENT_VERSION = "v1.0.5"
 REPO_OWNER = "MutenRos" # Cambiar si tu usuario de GitHub es diferente
 REPO_NAME = "MenuSpreader"
 
@@ -761,5 +761,17 @@ del "%~f0"
         messagebox.showinfo("Enviado", f"Proceso finalizado.\nEnviados con éxito: {success}/{total}")
 
 if __name__ == "__main__":
-    app = MenuAppLocal()
-    app.mainloop()
+    try:
+        app = MenuAppLocal()
+        app.mainloop()
+    except Exception as e:
+        # Emergency error handler for startup crashes
+        import traceback
+        error_msg = f"Error crítico al iniciar:\n{str(e)}\n\n{traceback.format_exc()}"
+        try:
+            logging.critical(error_msg)
+            messagebox.showerror("Error Fatal", error_msg)
+        except:
+            # If tkinter fails, try writing to a file at least
+            with open("CRITICAL_ERROR.txt", "w") as f:
+                f.write(error_msg)
