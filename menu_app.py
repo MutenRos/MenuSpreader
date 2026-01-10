@@ -10,6 +10,7 @@ import qrcode
 from PIL import Image, ImageTk
 import io
 import logging
+import webbrowser # Added for donation link
 
 # Setup logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG, 
@@ -95,6 +96,7 @@ class MenuAppLocal(tk.Tk):
         self.status_var = tk.StringVar(value="Iniciando sistema...")
         self.bar_name_var = tk.StringVar()
         self.selected_file_path = None
+        self.has_shown_donation = False # Flag for donation popup
         
         # Load Data
         self.load_bar_info()
@@ -398,6 +400,20 @@ class MenuAppLocal(tk.Tk):
                     logging.info("System is READY")
                     self.login_frame.pack_forget()
                     self.dashboard_frame.pack(fill="both", expand=True)
+
+                    # --- Donation Popup Logic ---
+                    if not self.has_shown_donation:
+                        self.has_shown_donation = True
+                        response = messagebox.askyesno(
+                            "¡Conexión Exitosa!",
+                            "MenuSpreader funciona gracias a horas de trabajo gratuito.\n\n"
+                            "Si te ayuda a facturar más en tu bar, ¿considerarías apoyarme con un café?\n\n"
+                            "Ir a PayPal.me/MutenRos"
+                        )
+                        if response:
+                            webbrowser.open("https://paypal.me/MutenRos")
+                    # ----------------------------
+
                 elif status == "QR_READY" and qr_data:
                     logging.info("QR is READY, attempting to show")
                     self.show_qr(qr_data)

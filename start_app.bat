@@ -1,29 +1,47 @@
 @echo off
-echo ===================================================
-echo   INICIANDO SISTEMA DE MENU - MENUSPREADER
-echo ===================================================
-echo 1. Iniciando Servidor del Bot (Node.js)...
+title MenuSpreader Launcher
+color 0A
 
-:: Check if node is available
+echo ===================================================
+echo   INICIANDO MENUSPREADER
+echo ===================================================
+
+:: 1. Verificar Node.js
 where node >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] No se encuentra Node.js instalado o en el PATH.
-    echo Por favor instala Node.js para continuar.
+    echo [ERROR CRITICO] Node.js no esta instalado.
+    echo.
+    echo Para usar este programa necesitas descargar Node.js:
+    echo https://nodejs.org/
+    echo.
     pause
     exit
 )
 
-:: Start the Bot Server in a minimized window
-start "Menu Bot Server" /min cmd /k "node bot-server.js"
+:: 2. Verificar Dependencias (Primera ejecucion)
+if not exist "node_modules" (
+    echo [INFO] Primera vez iniciada. Instalando dependencias...
+    call npm install
+)
 
-echo Servidor lanzado. Esperando 5 segundos para conexion...
+:: 3. Iniciar Cerebro (Servidor)
+echo [1/2] Arrancando servidor WhatsApp...
+start "MenuSpreader Server (NO CERRAR)" /min cmd /k "node bot-server.js"
+
+:: Esperar un poco a que arranque
+timeout /t 3 >nul
+
+:: 4. Iniciar Interfaz (GUI)
+echo [2/2] Abriendo aplicacion...
+if exist "dist\MenuSpreader.exe" (
+    start "" "dist\MenuSpreader.exe"
+) else if exist "MenuSpreader.exe" (
+    start "" "MenuSpreader.exe"
+) else (
+    echo [ERROR] No encuentro MenuSpreader.exe
+    pause
+)
+
+echo.
+echo Todo listo. Minimiza esta ventana, pero NO la cierres.
 timeout /t 5 >nul
-
-echo 2. Iniciando Aplicacion de Escritorio...
-start "" "dist\MenuSpreader.exe"
-
-echo.
-echo Todo listo! Puedes cerrar esta ventana negra si quieres,
-echo pero NO cierres la ventana que dice "Menu Bot Server".
-echo.
-pause
