@@ -21,7 +21,7 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG,
 
 BOT_API_URL = "http://localhost:3001"
 DB_PATH = "bar_data.db"
-CURRENT_VERSION = "v1.0.3"
+CURRENT_VERSION = "v1.0.4"
 REPO_OWNER = "MutenRos" # Cambiar si tu usuario de GitHub es diferente
 REPO_NAME = "MenuSpreader"
 
@@ -557,9 +557,6 @@ del "%~f0"
             # Update UI on Main Thread
             self.after(0, lambda: self._handle_bot_error(str(e)))
         
-        # Schedule next check in 2 seconds
-        self.after(2000, self.check_bot_connection)
-
     def _handle_bot_response(self, data):
         status = data.get("status")
         qr_data = data.get("qr")
@@ -590,10 +587,15 @@ del "%~f0"
             self.show_qr(qr_data)
             self.dashboard_frame.pack_forget()
             self.login_frame.pack(fill="both", expand=True)
+            
+        # Schedule next check
+        self.after(2000, self.check_bot_connection)
     
     def _handle_bot_error(self, error_msg):
         logging.error(f"Connection check failed: {error_msg}")
         self.status_var.set("Esperando al servidor local (node bot-server.js)...")
+        # Schedule next check
+        self.after(2000, self.check_bot_connection)
 
     def show_qr(self, qr_data):
         logging.info("show_qr called")
