@@ -6,11 +6,14 @@ import subprocess
 import threading
 import time
 import os
+import sys
 import qrcode
 from PIL import Image, ImageTk
 import io
 import logging
 import webbrowser # Added for donation link
+
+import zipfile # Added for zip extraction
 
 # Setup logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG, 
@@ -18,6 +21,9 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG,
 
 BOT_API_URL = "http://localhost:3001"
 DB_PATH = "bar_data.db"
+CURRENT_VERSION = "v1.0.3"
+REPO_OWNER = "MutenRos" # Cambiar si tu usuario de GitHub es diferente
+REPO_NAME = "MenuSpreader"
 
 class Colors:
     PRIMARY = "#3B82F6"   # Blue 500 (More vibrant)
@@ -38,6 +44,14 @@ class MenuAppLocal(tk.Tk):
         self.title("MenuSpreader Desktop - Pro")
         self.state('zoomed') # Start maximized
         self.configure(bg=Colors.BG)
+        
+        # Bot Server Process
+        self.bot_process = None
+        self.start_bot_server()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # Check for updates in background
+        threading.Thread(target=self.check_for_updates, daemon=True).start()
         
         # Configure Styles
         self.style = ttk.Style()
@@ -97,7 +111,112 @@ class MenuAppLocal(tk.Tk):
         self.bar_name_var = tk.StringVar()
         self.selected_file_path = None
         self.has_shown_donation = False # Flag for donation popup
+
+        # Initialize Data & UI
+        self.load_bar_info()
+        self.create_widgets()
+        self.check_bot_connection()
         
+    def check_for_updates(self):
+        """Checks GitHub releases for a new version"""
+        try:
+            url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/releases/latest"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                latest_tag = data.get("tag_name", "") # e.g. v1.0.0
+                
+                if self.is_newer(latest_tag, CURRENT_VERSION):
+                    logging.info(f"New version found: {latest_tag}")
+                    
+                    # Find the asset url for ZIP
+                    download_url = None
+                    for asset in data.get("assets", []):
+                        if asset.get("name").endswith(".zip"):
+                            download_url = asset.get("browser_download_url")
+                            break
+                    
+                    if download_url:
+                        # Start silent update without asking
+                        self.after(0, lambda: self.start_silent_update(download_url))
+        except Exception as e:
+            logging.error(f"Error Checking updates: {e}")
+
+    def is_newer(self, remote_tag, current_tag):
+        try:
+            # Strip 'v' and split by '.' -> [1, 0, 1]
+            r = [int(x) for x in remote_tag.lstrip('v').split('.')]
+            c = [int(x) for x in current_tag.lstrip('v').split('.')]
+            return r > c
+        except:
+            return False
+
+    def start_silent_update(self, url):
+        self.status_var.set("⚠️ Actualizando sistema... No cierre la ventana.")
+        threading.Thread(target=self.perform_update, args=(url,), daemon=True).start()
+
+    def perform_update(self, url):
+        try:
+            logging.info(f"Downloading update from {url}")
+            
+            # 1. Download ZIP
+            response = requests.get(url, stream=True)
+            if response.status_code == 200:
+                zip_name = "update.zip"
+                with open(zip_name, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                
+                logging.info("Download complete. Extracting...")
+                
+                # 2. Extract to temp folder
+                extract_path = "update_temp"
+                if os.path.exists(extract_path):
+                   import shutil
+                   shutil.rmtree(extract_path)
+                
+                with zipfile.ZipFile(zip_name, 'r') as zip_ref:
+                    zip_ref.extractall(extract_path)
+                
+                # 3. Determine source folder (usually dist/MenuSpreader or similar inside zip)
+                # We assume the zip contains a folder likely named "MenuSpreader"
+                source_dir = os.path.join(extract_path, "MenuSpreader") 
+                if not os.path.exists(source_dir):
+                    # If not found, maybe files are at root of zip? -> use extract_path
+                     source_dir = extract_path
+
+                logging.info(f"Source dir for update: {source_dir}")
+                
+                # 4. Create updater batch script
+                # Self-destruct logic included
+                current_dir = os.getcwd()
+                batch_script = f"""@echo off
+timeout /t 3 /nobreak > NUL
+echo Installing update...
+xcopy "{os.path.abspath(source_dir)}\*" "{current_dir}" /E /H /Y /Q
+rmdir "{os.path.abspath(extract_path)}" /S /Q
+del "{os.path.abspath(zip_name)}"
+start "" "{os.path.join(current_dir, 'MenuSpreader.exe')}"
+del "%~f0"
+"""
+                with open("updater.bat", "w") as bat:
+                    bat.write(batch_script)
+                
+                logging.info("Updater script created. Restarting...")
+                
+                # 5. Launch updater and exit
+                self.after(0, lambda: subprocess.Popen("updater.bat", shell=True))
+                self.after(1000, self.on_closing)
+                
+        except Exception as e:
+            logging.error(f"Update failed: {e}")
+            self.after(0, lambda: messagebox.showerror("Error de Actualización", f"Fallo automático: {e}"))
+            self.after(0, lambda: webbrowser.open(url)) # Fallback to browser
+
+    def show_update_dialog(self, version, url):
+        # Deprecated
+        pass
+
         # Load Data
         self.load_bar_info()
         
@@ -106,6 +225,42 @@ class MenuAppLocal(tk.Tk):
         
         # Start connection checker
         self.check_bot_connection()
+
+    def start_bot_server(self):
+        try:
+            if getattr(sys, 'frozen', False):
+                # Running as PyInstaller bundle
+                base_path = sys._MEIPASS
+            else:
+                # Running in normal Python environment
+                base_path = os.path.dirname(os.path.abspath(__file__))
+
+            bot_exe = os.path.join(base_path, "bot-server.exe")
+            
+            if os.path.exists(bot_exe):
+                # Start bot-server.exe hidden
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                
+                self.bot_process = subprocess.Popen(
+                    [bot_exe], 
+                    startupinfo=startupinfo
+                )
+                logging.info(f"Started bot-server.exe from {bot_exe}")
+            else:
+                logging.warning(f"bot-server.exe not found at {bot_exe}")
+                
+        except Exception as e:
+            logging.error(f"Failed to start bot-server: {e}")
+
+    def on_closing(self):
+        if self.bot_process:
+            try:
+                self.bot_process.terminate()
+                logging.info("Terminated bot-server process")
+            except Exception as e:
+                logging.error(f"Error terminating bot-server: {e}")
+        self.destroy()
 
     def create_widgets(self):
         # Header (Top Bar)
@@ -127,6 +282,9 @@ class MenuAppLocal(tk.Tk):
         
         # -- QR / Login View --
         self.login_frame = tk.Frame(self.main_container, bg=Colors.CARD_BG, padx=40, pady=40)
+        # Show initially (Loading state)
+        self.login_frame.pack(fill="both", expand=True)
+
         self.qr_label = tk.Label(self.login_frame, bg=Colors.CARD_BG)
         self.qr_label.pack(pady=20)
         tk.Label(self.login_frame, text="Escanea el código para vincular WhatsApp", font=("Segoe UI", 14), bg=Colors.CARD_BG).pack()
@@ -183,6 +341,11 @@ class MenuAppLocal(tk.Tk):
         self.msg_text.insert("1.0", f"Hola {{nombre}}, *{self.bar_name_var.get()}* ha publicado el menú de hoy.")
         
         tk.Label(frame, text="Info: {nombre} se reemplaza automáticamente.", bg=Colors.CARD_BG, fg=Colors.TEXT_LIGHT, font=("Segoe UI", 9)).pack(anchor="w", pady=5)
+        
+        # Send Button
+        tk.Frame(frame, height=20, bg=Colors.CARD_BG).pack() # Spacer
+        btn_send = tk.Button(frame, text="🚀 ENVIAR MENÚ AHORA", command=self.send_menu, bg=Colors.SUCCESS, fg="white", font=("Segoe UI", 12, "bold"), padx=30, pady=15, relief="flat", cursor="hand2")
+        btn_send.pack(pady=10, fill="x")
         
         self.refresh_saved_messages()
 
@@ -292,11 +455,6 @@ class MenuAppLocal(tk.Tk):
         except Exception as e:
             logging.error(f"Error loading message: {e}")
 
-        # Send Button
-        tk.Frame(frame, height=20, bg=Colors.CARD_BG).pack() # Spacer
-        btn_send = tk.Button(frame, text="🚀 ENVIAR MENÚ AHORA", command=self.send_menu, bg=Colors.SUCCESS, fg="white", font=("Segoe UI", 12, "bold"), padx=30, pady=15, relief="flat", cursor="hand2")
-        btn_send.pack(pady=10, fill="x")
-
     def setup_contacts_tab(self):
         frame = tk.Frame(self.tab_contacts, bg=Colors.CARD_BG, padx=30, pady=30)
         frame.pack(fill="both", expand=True)
@@ -385,52 +543,57 @@ class MenuAppLocal(tk.Tk):
             self.file_label.config(text=os.path.basename(file_path), fg="#4f46e5")
 
     def check_bot_connection(self):
-        def _check():
-            try:
-                response = requests.get(f"{BOT_API_URL}/status")
-                data = response.json()
-                status = data.get("status")
-                qr_data = data.get("qr")
-                
-                logging.debug(f"Status check - Status: {status}, QR Data Length: {len(qr_data) if qr_data else 0}")
+        # Run check in background so we don't block the UI (Fix "White Screen" issue)
+        threading.Thread(target=self._background_check_loop, daemon=True).start()
 
-                self.status_var.set(f"Estado del Sistema: {status}")
-                
-                if status == "READY":
-                    logging.info("System is READY")
-                    self.login_frame.pack_forget()
-                    self.dashboard_frame.pack(fill="both", expand=True)
+    def _background_check_loop(self):
+        try:
+            # Short timeout to avoid hanging threads
+            response = requests.get(f"{BOT_API_URL}/status", timeout=2)
+            data = response.json()
+            # Update UI on Main Thread
+            self.after(0, lambda: self._handle_bot_response(data))
+        except Exception as e:
+            # Update UI on Main Thread
+            self.after(0, lambda: self._handle_bot_error(str(e)))
+        
+        # Schedule next check in 2 seconds
+        self.after(2000, self.check_bot_connection)
 
-                    # --- Donation Popup Logic ---
-                    if not self.has_shown_donation:
-                        self.has_shown_donation = True
-                        response = messagebox.askyesno(
-                            "¡Conexión Exitosa!",
-                            "MenuSpreader funciona gracias a horas de trabajo gratuito.\n\n"
-                            "Si te ayuda a facturar más en tu bar, ¿considerarías apoyarme con un café?\n\n"
-                            "Ir a PayPal.me/MutenRos"
-                        )
-                        if response:
-                            webbrowser.open("https://paypal.me/MutenRos")
-                    # ----------------------------
+    def _handle_bot_response(self, data):
+        status = data.get("status")
+        qr_data = data.get("qr")
+        
+        logging.debug(f"Status check - Status: {status}")
+        self.status_var.set(f"Estado del Sistema: {status}")
+        
+        if status == "READY":
+            logging.info("System is READY")
+            self.login_frame.pack_forget()
+            self.dashboard_frame.pack(fill="both", expand=True)
 
-                elif status == "QR_READY" and qr_data:
-                    logging.info("QR is READY, attempting to show")
-                    self.show_qr(qr_data)
-                    self.dashboard_frame.pack_forget()
-                    self.login_frame.pack(fill="both", expand=True)
-                else:
-                    # Initializing
-                    pass
-                    
-            except Exception as e:
-                logging.error(f"Connection check failed: {e}")
-                self.status_var.set("Esperando al servidor local (node bot-server.js)...")
-            
-            # Check again in 2 seconds
-            self.after(2000, _check)
-            
-        _check()
+            # --- Donation Popup Logic ---
+            if not self.has_shown_donation:
+                self.has_shown_donation = True
+                response = messagebox.askyesno(
+                    "¡Conexión Exitosa!",
+                    "MenuSpreader funciona gracias a horas de trabajo gratuito.\n\n"
+                    "Si te ayuda a facturar más en tu bar, ¿considerarías apoyarme con un café?\n\n"
+                    "Ir a PayPal.me/MutenRos"
+                )
+                if response:
+                    webbrowser.open("https://paypal.me/MutenRos")
+            # ----------------------------
+
+        elif status == "QR_READY" and qr_data:
+            logging.info("QR is READY, attempting to show")
+            self.show_qr(qr_data)
+            self.dashboard_frame.pack_forget()
+            self.login_frame.pack(fill="both", expand=True)
+    
+    def _handle_bot_error(self, error_msg):
+        logging.error(f"Connection check failed: {error_msg}")
+        self.status_var.set("Esperando al servidor local (node bot-server.js)...")
 
     def show_qr(self, qr_data):
         logging.info("show_qr called")
@@ -560,10 +723,19 @@ class MenuAppLocal(tk.Tk):
             
         base_msg = self.msg_text.get("1.0", "end-1c")
         
+        # Start sending in background
+        self.status_var.set("⏳ Enviando menús... Por favor espere.")
+        threading.Thread(target=self._background_send, args=(companies, base_msg), daemon=True).start()
+
+    def _background_send(self, companies, base_msg):
         # 2. Iterate and send via API
         success_count = 0
+        total = len(companies)
         
-        for name, phone in companies:
+        for i, (name, phone) in enumerate(companies):
+            # Update status during loop
+            self.after(0, lambda idx=i: self.status_var.set(f"⏳ Enviando {idx+1}/{total}..."))
+            
             # Personalize message
             msg = base_msg.replace("{nombre}", name)
             
@@ -573,12 +745,18 @@ class MenuAppLocal(tk.Tk):
                      "caption": msg,
                      "imagePath": self.selected_file_path
                 }
-                requests.post(f"{BOT_API_URL}/send-menu", json=payload)
+                # Timeout to prevent infinite hang
+                requests.post(f"{BOT_API_URL}/send-menu", json=payload, timeout=30)
                 success_count += 1
             except Exception as e:
                 print(f"Error sending to {phone}: {e}")
-                
-        messagebox.showinfo("Enviado", f"Menú enviado a {success_count} contactos.")
+        
+        # Finished
+        self.after(0, lambda: self._sending_complete(success_count, total))
+
+    def _sending_complete(self, success, total):
+        self.status_var.set("✅ Envío completado")
+        messagebox.showinfo("Enviado", f"Proceso finalizado.\nEnviados con éxito: {success}/{total}")
 
 if __name__ == "__main__":
     app = MenuAppLocal()

@@ -1,24 +1,49 @@
-# Menu App - Pol韌onos
+# MenuSpreader - Distribuci贸n
 
-Applicaci髇 para gesti髇 y distribuci髇 de men鷖 de bares en pol韌onos industriales.
+## Generar Versi贸n Portable
+Este proyecto se compila creando una carpeta portable (ZIP) que contiene el frontend (Python/Tkinter), el backend (Node.js) y todas las dependencias.
 
-## Caracter韘ticas
+### 1. Requisitos
+- Python 3.11+
+- Node.js 18+
+- Entorno Virtual de Python (recomendado para evitar errores de DLL)
 
-- Subida de men鷖 (Imagen/PDF) por parte de los bares.
-- Distribuci髇 autom醫ica a empresas (Simulaci髇 WhatsApp).
-- Historial de men鷖.
+### 2. Preparaci贸n del Entorno
+Si es la primera vez:
+```bash
+# Crear entorno virtual
+python -m venv venv
 
-## Configuraci髇
+# Activar (PowerShell)
+.\venv\Scripts\Activate
 
-1. Instalar dependencias:
-   `npm install`
-2. Configurar base de datos:
-   `npx prisma migrate dev`
-3. Iniciar servidor:
-   `npm run dev`
+# Instalar dependencias
+pip install requests pillow qrcode[pil] pyinstaller
+```
 
-## Tecnolog韆s
+### 3. Compilar bot-server.exe (Backend)
+Primero convertimos el servidor Node a ejecutable:
+```bash
+npm install -g pkg
+pkg bot-server.js --targets node18-win-x64 --output bot-server.exe
+```
 
-- Next.js 15
-- Tailwind CSS
-- Prisma (SQLite)
+### 4. Compilar MenuSpreader (Portable)
+Usamos PyInstaller en modo carpeta (`onedir`) para m谩xima estabilidad.
+```bash
+# Aseg煤rate de estar en el entorno virtual
+python -m PyInstaller MenuSpreader.spec --noconfirm
+```
+
+### 5. Empaquetar
+Para distribuir, comprime el contenido de `dist/MenuSpreader` en un ZIP.
+```powershell
+Compress-Archive -Path "dist\MenuSpreader\*" -DestinationPath "dist\MenuSpreader_Portable.zip" -Force
+```
+
+## Ejecuci贸n por el Usuario
+1. Descargar `MenuSpreader_Portable.zip`.
+2. Descomprimir en una carpeta (ej. Documentos).
+3. Ejecutar `MenuSpreader.exe` (dentro de la carpeta).
+   - El servidor `bot-server.exe` arranca autom谩ticamente en segundo plano.
+   - La sesi贸n de WhatsApp se guarda en la subcarpeta `.wwebjs_auth`.
