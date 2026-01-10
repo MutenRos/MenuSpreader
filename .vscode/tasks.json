@@ -78,6 +78,22 @@
 			"args": [],
 			"isBackground": true,
 			"group": "test"
+		},
+		{
+			"label": "Start Menu App",
+			"type": "shell",
+			"command": "npm run dev",
+			"args": [],
+			"isBackground": true,
+			"group": "test"
+		},
+		{
+			"label": "Start Menu App",
+			"type": "shell",
+			"command": "npm run dev",
+			"args": [],
+			"isBackground": true,
+			"group": "test"
 		}
 	]
 }

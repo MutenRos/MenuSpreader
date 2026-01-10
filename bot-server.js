@@ -8,6 +8,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Estado global del bot
+let botStatus = 'INITIALIZING'; // INITIALIZING, QR_READY, READY, AUTH_FAILURE
+let currentQR = null;
+
 console.log("Inicializando cliente de WhatsApp...");
 
 const client = new Client({
@@ -19,19 +23,38 @@ const client = new Client({
 });
 
 client.on('qr', (qr) => {
-    console.log('ESCANEA ESTE CÓDIGO QR CON TU WHATSAPP:');
-    qrcode.generate(qr, { small: true });
+    console.log('CÓDIGO QR GENERADO (Ver en App de Escritorio)');
+    
+    // Actualizar estado para la UI externa
+    botStatus = 'QR_READY';
+    currentQR = qr;
 });
 
 client.on('ready', () => {
     console.log('✅ Cliente de WhatsApp listo y conectado!');
+    botStatus = 'READY';
+    currentQR = null;
 });
 
 client.on('auth_failure', msg => {
     console.error('AUTHENTICATION FAILURE', msg);
+    botStatus = 'AUTH_FAILURE';
+});
+
+client.on('disconnected', (reason) => {
+    console.log('Cliente desconectado:', reason);
+    botStatus = 'DISCONNECTED';
+    // Destruir y reiniciar para generar nuevo QR
+    client.destroy();
+    client.initialize();
 });
 
 client.initialize();
+
+// Endpoint para comprobar estado desde Python
+app.get('/status', (req, res) => {
+    res.json({ status: botStatus, qr: currentQR });
+});
 
 app.post('/send-menu', async (req, res) => {
     const { phone, caption, imagePath } = req.body;

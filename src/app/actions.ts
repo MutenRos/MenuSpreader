@@ -54,6 +54,7 @@ export async function uploadMenu(formData: FormData) {
   await fs.writeFile(filepath, buffer)
   
   const imageUrl = `/uploads/${filename}`
+  const messageText = formData.get('messageText') as string
 
   // Create Menu
   const menu = await prisma.menu.create({
@@ -65,8 +66,52 @@ export async function uploadMenu(formData: FormData) {
   })
 
   // Trigger WhatsApp sending
-  await sendMenuviaWhatsApp(menu.id)
+  await sendMenuviaWhatsApp(menu.id, messageText)
 
+  revalidatePath('/')
+}
+
+export async function updateBarName(formData: FormData) {
+  const name = formData.get('name') as string
+  if (!name) return
+
+  const bar = await prisma.bar.findFirst()
+  if (bar) {
+    await prisma.bar.update({
+      where: { id: bar.id },
+      data: { name }
+    })
+  } else {
+     // Create if not exists (edge case)
+     await prisma.bar.create({
+        data: {
+            name,
+            email: 'placeholder@bar.com'
+        }
+     })
+  }
+  revalidatePath('/')
+}
+
+export async function createMessageTemplate(formData: FormData) {
+  const name = formData.get('name') as string
+  const content = formData.get('content') as string
+  
+  const bar = await prisma.bar.findFirst()
+  if (!bar || !name || !content) return
+
+  await prisma.messageTemplate.create({
+    data: {
+      name,
+      content,
+      barId: bar.id
+    }
+  })
+  revalidatePath('/')
+}
+
+export async function deleteMessageTemplate(id: string) {
+  await prisma.messageTemplate.delete({ where: { id } })
   revalidatePath('/')
 }
 
@@ -95,36 +140,23 @@ export async function deleteCompany(id: string) {
   revalidatePath('/')
 }
 
-async function sendMenuviaWhatsApp(menuId: string) {
+async function sendMenuviaWhatsApp(menuId: string, customMessage?: string) {
   const companies = await prisma.company.findMany()
   const menu = await prisma.menu.findUnique({ where: { id: menuId }, include: { bar: true } })
   
   if (!menu) return
 
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken = process.env.TWILIO_AUTH_TOKEN
-  const fromNumber = process.env.TWILIO_FROM // e.g., 'whatsapp:+14155238886'
-
-  let client;
-  if (accountSid && authToken && fromNumber) {
-    try {
-      client = twilio(accountSid, authToken)
-    } catch (error) {
-       console.error('Error initializing Twilio client', error)
-    }
-  } else {
-    console.warn('Twilio credentials not found in environment variables. Messages will only be logged.')
-  }
-
   // Construct the message URL
   const appUrl = process.env.APP_URL || 'http://localhost:3000'
-  const menuLink = `${appUrl}${menu.imageUrl}`
-
+  
   console.log('---------------------------------------------------')
   console.log(`STARTING WHATSAPP DISTRIBUTION FOR MENU ${menu.id}`)
   
   for (const company of companies) {
-    const messageBody = `Hola ${company.contactName}, *${menu.bar.name}* ha publicado el menú de hoy.`
+    // Si hay mensaje personalizado, úsalo. Si no, usa el default.
+    // Replace {nombre} with contact name if present in template
+    let messageBody = customMessage || `Hola {nombre}, *${menu.bar.name}* ha publicado el menú de hoy.`
+    messageBody = messageBody.replace(/{nombre}/g, company.contactName || 'Cliente')
     
     // Usamos la ruta absoluta del sistema de archivos para que el bot la encuentre
     const absoluteImagePath = path.join(process.cwd(), 'public', menu.imageUrl);

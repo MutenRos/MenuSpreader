@@ -15,6 +15,15 @@ model Bar {
   name      String
   email     String   @unique
   menus     Menu[]
+  messageTemplates MessageTemplate[]
+}
+
+model MessageTemplate {
+  id      String @id @default(cuid())
+  name    String
+  content String
+  barId   String
+  bar     Bar    @relation(fields: [barId], references: [id])
 }
 
 model Company {

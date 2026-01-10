@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenuSpreader - Automatización de Menús por WhatsApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --bg: #F8FAFC;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Nav */
+        nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-left: 2rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 160px 2rem 100px;
+            text-align: center;
+            background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, var(--primary), #9333EA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.5);
+            background-color: var(--primary-dark);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: var(--text);
+            box-shadow: none;
+            border: 1px solid #E2E8F0;
+            margin-left: 1rem;
+        }
+        
+        .cta-secondary:hover {
+            background: #F1F5F9;
+            box-shadow: none;
+        }
+
+        /* Features */
+        .features {
+            padding: 100px 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #F1F5F9;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-light);
+        }
+
+        /* Screenshot Section */
+        .preview {
+            max-width: 1000px;
+            margin: 0 auto 100px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 8px solid #1E293B;
+            background: #1E293B;
+        }
+        
+        .preview img {
+            width: 100%;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--white);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        footer p {
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-container { flex-direction: column; gap: 1rem; }
+            .nav-links a { margin: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">🚀 MenuSpreader</a>
+            <div class="nav-links">
+                <a href="#features">Características</a>
+                <a href="#download">Descargar</a>
+                <a href="https://github.com/tu-usuario/menu-app">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Tu Menú del Día,<br>en el WhatsApp de Todos.</h1>
+        <p>La herramienta definitiva para bares y restaurantes. Envía tu carta diaria a cientos de clientes con un solo clic. Sin costes mensuales.</p>
+        <br>
+        <div class="preview">
+            <!-- Placeholder for app screenshot. You should add a screenshot here named app-screenshot.png -->
+             <div style="height: 500px; background: #0f172a; display: flex; align-items: center; justify-content: center; color: white;">
+                [Captura de Pantalla de la Aplicación]
+             </div>
+        </div>
+
+        <a href="https://github.com/tu-usuario/menu-app/releases/latest" class="cta-button">Descargar para Windows</a>
+        <a href="https://github.com/tu-usuario/menu-app" class="cta-button cta-secondary">Ver Código Fuente</a>
+    </section>
+
+    <section id="features" class="features">
+        <h2 style="text-align: center; font-size: 2.5rem;">Potencia tu Negocio</h2>
+        <div class="grid">
+            <div class="card">
+                <span class="card-icon">⚡</span>
+                <h3>Envío Instantáneo</h3>
+                <p>Olvídate de copiar y pegar. Sube tu imagen, escribe el mensaje y MenuSpreader hará el resto.</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">👥</span>
+                <h3>Base de Datos Local</h3>
+                <p>Gestiona tus contactos y empresas cercanas con horarios y nombres. Todo guardado en tu PC.</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">🎨</span>
+                <h3>Plantillas Personalizadas</h3>
+                <p>Guarda tus mensajes favoritos. Usa variables como {nombre} para dar un trato personal.</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">🔒</span>
+                <h3>Seguro y Privado</h3>
+                <p>Utiliza tu propia sesión de WhatsApp Web. Tus datos no pasan por servidores de terceros.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="download" style="background: var(--primary); color: white; padding: 100px 2rem; text-align: center;">
+        <h2 style="margin-bottom: 1rem; font-size: 2.5rem;">Empieza Hoy Mismo</h2>
+        <p style="margin-bottom: 2rem; opacity: 0.9;">Únete a los restaurantes que ya automatizan su marketing diario.</p>
+        <a href="#" style="background: white; color: var(--primary); padding: 1rem 3rem; border-radius: 50px; text-decoration: none; font-weight: 800;">Descargar v1.0</a>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 MenuSpreader. Código Abierto y Gratuito.</p>
+    </footer>
+
+</body>
+</html>
