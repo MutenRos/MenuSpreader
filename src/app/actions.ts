@@ -72,8 +72,8 @@ export async function uploadMenu(formData: FormData) {
 }
 
 export async function updateBarName(formData: FormData) {
-  const name = formData.get('name') as string
-  if (!name) return
+  const name = (formData.get('name') as string)?.trim()
+  if (!name || name.length < 2) return  // Mínimo 2 caracteres para el nombre del bar
 
   const bar = await prisma.bar.findFirst()
   if (bar) {
@@ -116,18 +116,24 @@ export async function deleteMessageTemplate(id: string) {
 }
 
 export async function createCompany(formData: FormData) {
-  const name = formData.get('name') as string
-  const contactName = formData.get('contactName') as string
-  const contactPhone = formData.get('contactPhone') as string
+  const name = (formData.get('name') as string)?.trim()
+  const contactName = (formData.get('contactName') as string)?.trim()
+  const contactPhone = (formData.get('contactPhone') as string)?.trim()
 
   if (!name || !contactPhone) {
-    throw new Error('Name and Phone are required')
+    throw new Error('Nombre y teléfono son obligatorios')
+  }
+
+  // Validar formato de teléfono (mínimo 9 dígitos)
+  const phoneDigits = contactPhone.replace(/\D/g, '')
+  if (phoneDigits.length < 9) {
+    throw new Error('El teléfono debe tener al menos 9 dígitos')
   }
 
   await prisma.company.create({
     data: {
       name,
-      contactName: contactName || 'Unknown',
+      contactName: contactName || 'Sin nombre',
       contactPhone
     }
   })

@@ -63,6 +63,11 @@ app.post('/send-menu', async (req, res) => {
         return res.status(400).json({ error: 'Phone number missing' });
     }
 
+    // Validar que el caption no exceda 4096 caracteres (límite de WhatsApp)
+    if (caption && caption.length > 4096) {
+        return res.status(400).json({ error: 'Message too long (max 4096 chars)' });
+    }
+
     // Limpieza básica del número (eliminar caracteres no numéricos)
     const cleanPhone = phone.replace(/\D/g, ''); 
     // Añadir sufijo para contactos personales
@@ -91,6 +96,15 @@ app.post('/send-menu', async (req, res) => {
         console.error('Error al enviar mensaje:', err);
         res.status(500).json({ error: err.message });
     }
+});
+
+// Endpoint de salud para monitorizar el bot
+app.get('/health', (req, res) => {
+    res.json({
+        uptime: process.uptime(),
+        status: botStatus,
+        timestamp: new Date().toISOString()
+    });
 });
 
 const PORT = 3001;

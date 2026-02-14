@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Transiciones suaves globales */
+a, button {
+  transition: all 0.2s ease;
+}
+
+/* Mejora accesibilidad: foco visible */
+*:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

@@ -686,6 +686,21 @@ del "%~f0"
 
     def add_contact(self):
         try:
+            # Validar campos obligatorios antes de insertar
+            nombre = self.entry_comp_contact_name.get().strip()
+            raw_phone = self.entry_comp_phone.get().strip()
+            
+            if not nombre:
+                messagebox.showwarning("Campo vacío", "El nombre del contacto es obligatorio.")
+                return
+            if not raw_phone or len(raw_phone) < 9:
+                messagebox.showwarning("Teléfono inválido", "Introduce un número de teléfono válido (mín. 9 dígitos).")
+                return
+            # Comprobar que solo contiene dígitos
+            if not raw_phone.replace(" ", "").isdigit():
+                messagebox.showwarning("Formato incorrecto", "El teléfono solo puede contener números.")
+                return
+            
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
             import uuid
@@ -693,7 +708,6 @@ del "%~f0"
             
             # Combine Prefix + Phone
             prefix = self.combo_prefix.get()
-            raw_phone = self.entry_comp_phone.get()
             full_phone = prefix + raw_phone
             
             c.execute("INSERT INTO Company (id, name, duration, contactName, contactPhone) VALUES (?, ?, ?, ?, ?)", 
@@ -738,6 +752,12 @@ del "%~f0"
         
         if not companies:
             messagebox.showwarning("Sin contactos", "No hay empresas en la lista.")
+            return
+
+        # Confirmación antes de enviar (evita envíos accidentales)
+        if not messagebox.askyesno("Confirmar envío",
+                f"¿Enviar el menú a {len(companies)} contacto(s)?\n\n"
+                f"Imagen: {os.path.basename(self.selected_file_path)}"):
             return
             
         base_msg = self.msg_text.get("1.0", "end-1c")
