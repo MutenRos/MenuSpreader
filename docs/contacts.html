@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenuSpreader — Contactos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary:#3B82F6; --primary-dark:#2563EB; --secondary:#1E293B; --text:#0F172A; --text-light:#64748B; --bg:#F1F5F9; --white:#FFF; --success:#10B981; --danger:#EF4444; --warning:#F59E0B; --border:#E2E8F0; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+        nav { background:rgba(255,255,255,0.9); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid var(--border); }
+        .nav-inner { max-width:1200px; margin:0 auto; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+        .logo { font-weight:900; font-size:1.5rem; text-decoration:none; background:linear-gradient(135deg,#1E293B,#3B82F6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .nav-links { display:flex; gap:1.5rem; align-items:center; }
+        .nav-links a { text-decoration:none; color:var(--text-light); font-weight:600; font-size:0.9rem; padding:0.4rem 0.8rem; border-radius:8px; transition:all 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color:var(--primary); background:#EEF2FF; }
+        .container { max-width:900px; margin:0 auto; padding:2rem; }
+        .card { background:var(--white); border-radius:16px; border:1px solid var(--border); padding:2rem; margin-bottom:2rem; }
+        .card h2 { margin-bottom:1.5rem; }
+        input,select { padding:0.7rem 1rem; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.9rem; }
+        input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+        .btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.65rem 1.2rem; border-radius:8px; font-weight:700; border:none; cursor:pointer; transition:all 0.2s; font-size:0.9rem; }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-primary:hover { background:var(--primary-dark); }
+        .btn-danger { background:var(--danger); color:white; font-size:0.8rem; padding:0.4rem 0.7rem; }
+        .btn-danger:hover { opacity:0.9; }
+
+        .form-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1rem; }
+        .form-grid.phone-row { grid-template-columns:80px 1fr auto; }
+        .form-group label { display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem; color:var(--text-light); }
+        .form-group input, .form-group select { width:100%; }
+
+        /* Table */
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; }
+        thead th { background:#F8FAFC; text-align:left; padding:0.75rem 1rem; font-size:0.8rem; font-weight:700; color:var(--text-light); border-bottom:2px solid var(--border); text-transform:uppercase; letter-spacing:0.5px; }
+        tbody td { padding:0.75rem 1rem; border-bottom:1px solid #F1F5F9; font-size:0.9rem; }
+        tbody tr:hover { background:#FAFAFE; }
+        tbody tr:last-child td { border-bottom:none; }
+        .phone-cell { font-family:monospace; color:var(--text-light); }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:var(--success); display:inline-block; margin-right:0.4rem; }
+
+        .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:2rem; }
+        .stat-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-align:center; }
+        .stat-number { font-size:2rem; font-weight:800; color:var(--primary); }
+        .stat-label { font-size:0.8rem; color:var(--text-light); margin-top:0.25rem; }
+
+        footer { text-align:center; padding:2rem; color:var(--text-light); font-size:0.85rem; }
+        footer a { color:var(--primary); text-decoration:none; }
+        @media(max-width:700px){ .form-grid{grid-template-columns:1fr;} .stats{grid-template-columns:1fr;} }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="logo">🚀 MenuSpreader</a>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="contacts.html" class="active">Contactos</a>
+                <a href="settings.html">Ajustes</a>
+                <a href="index.html">← Landing</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Contactos Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">47</div>
+                <div class="stat-label">Menús Enviados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">v1.0.6</div>
+                <div class="stat-label">Versión Actual</div>
+            </div>
+        </div>
+
+        <!-- Formulario de alta -->
+        <div class="card">
+            <h2>➕ Nuevo Contacto</h2>
+            <form onsubmit="event.preventDefault();alert('Mockup estático — en la app real se guardaría en SQLite vía Prisma.')">
+                <div class="form-grid">
+                    <div class="form-group"><label>Hora</label><input type="text" placeholder="14:00" value="14:00"></div>
+                    <div class="form-group"><label>Duración</label><input type="text" placeholder="1h" value="1h"></div>
+                    <div class="form-group"><label>Nombre</label><input type="text" placeholder="Nombre del contacto" value="Nuevo Cliente"></div>
+                </div>
+                <div class="form-grid phone-row">
+                    <div class="form-group"><label>Prefijo</label><select><option>+34</option><option>+1</option><option>+44</option><option>+33</option><option>+49</option></select></div>
+                    <div class="form-group"><label>Teléfono</label><input type="tel" placeholder="612345678" value="656789012"></div>
+                    <div class="form-group"><label>&nbsp;</label><button type="submit" class="btn btn-primary">Añadir</button></div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de contactos -->
+        <div class="card">
+            <h2>👥 Lista de Reservas</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Estado</th><th>Hora</th><th>Duración</th><th>Nombre</th><th>Teléfono</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="status-dot"></span></td>
+                            <td>13:00</td><td>1h 30min</td><td><strong>Cafetería Sol</strong><br><small style="color:var(--text-light);">María López</small></td>
+                            <td class="phone-cell">+34 612345678</td>
+                            <td><button class="btn-danger" onclick="alert('Mockup estático')">🗑️</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-dot"></span></td>
+                            <td>14:00</td><td>2h</td><td><strong>Restaurante Luna</strong><br><small style="color:var(--text-light);">Pedro García</small></td>
+                            <td class="phone-cell">+34 623456789</td>
+                            <td><button class="btn-danger" onclick="alert('Mockup estático')">🗑️</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-dot"></span></td>
+                            <td>13:30</td><td>1h</td><td><strong>Tech Corp</strong><br><small style="color:var(--text-light);">Alice Johnson</small></td>
+                            <td class="phone-cell">+34 600000000</td>
+                            <td><button class="btn-danger" onclick="alert('Mockup estático')">🗑️</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-dot"></span></td>
+                            <td>14:30</td><td>1h 30min</td><td><strong>Despacho García</strong><br><small style="color:var(--text-light);">Luis Martínez</small></td>
+                            <td class="phone-cell">+34 634567890</td>
+                            <td><button class="btn-danger" onclick="alert('Mockup estático')">🗑️</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-dot"></span></td>
+                            <td>15:00</td><td>1h</td><td><strong>Gimnasio Fit</strong><br><small style="color:var(--text-light);">Ana Ruiz</small></td>
+                            <td class="phone-cell">+34 645678901</td>
+                            <td><button class="btn-danger" onclick="alert('Mockup estático')">🗑️</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>MenuSpreader — Mockup estático · <a href="https://github.com/MutenRos/MenuSpreader" target="_blank">GitHub</a></p>
+    </footer>
+</body>
+</html>

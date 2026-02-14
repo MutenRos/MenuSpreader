@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenuSpreader — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --secondary: #1E293B;
+            --text: #0F172A;
+            --text-light: #64748B;
+            --bg: #F1F5F9;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --border: #E2E8F0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+        /* Nav */
+        nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .nav-inner { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 900; font-size: 1.5rem; text-decoration: none; background: linear-gradient(135deg, #1E293B, #3B82F6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-light); font-weight: 600; font-size: 0.9rem; padding: 0.4rem 0.8rem; border-radius: 8px; transition: all 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); background: #EFF6FF; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* Grid layout */
+        .grid-main { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; }
+
+        .card { background: var(--white); border-radius: 16px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .card h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .card p.subtitle { color: var(--text-light); margin-bottom: 1.5rem; }
+
+        /* Upload area */
+        .upload-zone { border: 2px dashed #CBD5E1; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #F8FAFC; transition: all 0.3s; cursor: pointer; margin-bottom: 1.5rem; }
+        .upload-zone:hover { border-color: var(--primary); background: #EFF6FF; }
+        .upload-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+        .upload-zone h3 { color: var(--text); }
+        .upload-zone small { color: var(--text-light); }
+
+        /* Form */
+        label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text); }
+        textarea, input[type="text"], input[type="email"], input[type="tel"] {
+            width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 0.95rem; transition: border-color 0.2s; resize: none;
+        }
+        textarea:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .var-hint { font-size: 0.75rem; color: var(--text-light); margin-top: 0.3rem; }
+        .var-hint code { color: var(--primary); background: #EFF6FF; padding: 0.1rem 0.4rem; border-radius: 4px; font-family: monospace; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #4F46E5, #3B82F6); color: white; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; box-shadow: 0 8px 20px -5px rgba(59,130,246,0.4); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 25px -5px rgba(59,130,246,0.5); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; }
+        .btn-dark { background: var(--secondary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+
+        /* Template pills */
+        .template-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+        .pill { font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 20px; background: #F1F5F9; border: 1px solid transparent; cursor: pointer; transition: all 0.2s; color: var(--text-light); }
+        .pill:hover { background: #EFF6FF; border-color: var(--primary); color: var(--primary); }
+
+        /* History items */
+        .history-item { display: flex; gap: 1rem; padding: 1rem; border-radius: 10px; border: 1px solid #F1F5F9; align-items: center; margin-bottom: 0.75rem; transition: all 0.2s; }
+        .history-item:hover { border-color: #C7D2FE; background: #FAFAFE; }
+        .history-thumb { width: 60px; height: 60px; background: #E2E8F0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; overflow: hidden; }
+        .history-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .history-info { flex: 1; }
+        .history-info strong { display: block; font-size: 0.9rem; }
+        .history-info small { color: var(--text-light); }
+        .dot-pulse { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 0.5rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* Sidebar cards */
+        .sidebar-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .sidebar-card h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .badge { background: #EEF2FF; color: var(--primary); font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 700; margin-left: auto; }
+
+        .template-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #F8FAFC; border-radius: 8px; border: 1px solid #F1F5F9; margin-bottom: 0.5rem; }
+        .template-item .name { font-weight: 600; font-size: 0.85rem; }
+        .template-item .preview { font-size: 0.75rem; color: var(--text-light); margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        .template-item button { background: none; border: none; color: #CBD5E1; cursor: pointer; transition: color 0.2s; }
+        .template-item button:hover { color: var(--danger); }
+
+        .contact-item { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.75rem; border-radius: 8px; transition: background 0.2s; }
+        .contact-item:hover { background: #F8FAFC; }
+        .contact-item .info strong { display: block; font-size: 0.85rem; }
+        .contact-item .info small { color: var(--text-light); font-size: 0.75rem; }
+        .contact-item .phone { font-family: monospace; font-size: 0.75rem; color: var(--text-light); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .form-row-phone { display: flex; gap: 0.5rem; }
+        .form-row-phone input { flex: 1; }
+        .form-row-phone select { width: 70px; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; }
+
+        /* Footer */
+        footer { text-align: center; padding: 2rem; color: var(--text-light); font-size: 0.85rem; }
+        footer a { color: var(--primary); text-decoration: none; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="logo">🚀 MenuSpreader</a>
+            <div class="nav-links">
+                <a href="dashboard.html" class="active">Dashboard</a>
+                <a href="contacts.html">Contactos</a>
+                <a href="settings.html">Ajustes</a>
+                <a href="index.html">← Landing</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="grid-main">
+            <!-- Columna principal -->
+            <div>
+                <div class="card">
+                    <h2>Publicar Nuevo Menú</h2>
+                    <p class="subtitle">Sube el menú del día y notifica a todos tus clientes automáticamente por WhatsApp.</p>
+
+                    <!-- Zona de subida -->
+                    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📤</div>
+                        <h3 id="fileName">Arrastra tu imagen aquí</h3>
+                        <small>o haz clic para explorar archivos (JPG, PNG, PDF)</small>
+                        <input type="file" id="fileInput" accept="image/*,application/pdf" hidden onchange="document.getElementById('fileName').textContent=this.files[0]?.name||'Arrastra tu imagen aquí'">
+                    </div>
+
+                    <!-- Mensaje personalizado -->
+                    <label>Mensaje Personalizado</label>
+                    <div class="template-pills">
+                        <span class="pill" onclick="document.getElementById('msg').value='Hola {nombre}, *Bar Manolo* ha publicado el menú de hoy. ¡Buen provecho! 🍽️'">🍽️ Formal</span>
+                        <span class="pill" onclick="document.getElementById('msg').value='¡Ey {nombre}! Ya está el menú del viernes en *Bar Manolo*. ¿Te vienes? 😄'">🎉 Viernes</span>
+                        <span class="pill" onclick="document.getElementById('msg').value='Buenos días {nombre}, aquí tienes el menú especial de fin de semana de *Bar Manolo*. ¡Reserva ya!'">🌟 Fin de semana</span>
+                    </div>
+                    <textarea id="msg" rows="4" placeholder="Escribe tu mensaje aquí...">Hola {nombre}, *Bar Manolo* ha publicado el menú de hoy.</textarea>
+                    <p class="var-hint">Variable: <code>{nombre}</code> se reemplaza automáticamente con el nombre del contacto.</p>
+
+                    <br>
+                    <button class="btn btn-primary" onclick="alert('Mockup estático — en la app real se envía por WhatsApp a todos los contactos.')">🚀 Enviar Menú Ahora</button>
+                </div>
+
+                <!-- Historial -->
+                <div class="card">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;">
+                        <span class="dot-pulse"></span>Envíos Recientes
+                    </h3>
+                    <div class="history-item">
+                        <div class="history-thumb"><img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=120&h=120&fit=crop" alt="menu"></div>
+                        <div class="history-info">
+                            <strong>Menú del día</strong>
+                            <small>14 de febrero de 2026, 10:30</small>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-thumb"><img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&h=120&fit=crop" alt="menu"></div>
+                        <div class="history-info">
+                            <strong>Menú del día</strong>
+                            <small>13 de febrero de 2026, 11:15</small>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-thumb"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=120&h=120&fit=crop" alt="menu"></div>
+                        <div class="history-info">
+                            <strong>Menú especial viernes</strong>
+                            <small>12 de febrero de 2026, 09:45</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div>
+                <!-- Plantillas -->
+                <div class="sidebar-card">
+                    <h3>📋 Plantillas <span class="badge">3</span></h3>
+                    <div class="template-item">
+                        <div>
+                            <div class="name">Formal</div>
+                            <div class="preview">Hola {nombre}, *Bar Manolo* ha publicado…</div>
+                        </div>
+                        <button title="Eliminar">🗑️</button>
+                    </div>
+                    <div class="template-item">
+                        <div>
+                            <div class="name">Viernes</div>
+                            <div class="preview">¡Ey {nombre}! Ya está el menú del viernes…</div>
+                        </div>
+                        <button title="Eliminar">🗑️</button>
+                    </div>
+                    <div class="template-item">
+                        <div>
+                            <div class="name">Fin de semana</div>
+                            <div class="preview">Buenos días {nombre}, aquí tienes el menú…</div>
+                        </div>
+                        <button title="Eliminar">🗑️</button>
+                    </div>
+                    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+                    <input type="text" placeholder="Nueva Plantilla (ej. Lunes)" style="margin-bottom:0.5rem;">
+                    <textarea rows="2" placeholder="Contenido del mensaje..." style="margin-bottom:0.75rem;"></textarea>
+                    <button class="btn btn-dark btn-sm" style="width:100%;justify-content:center;">Guardar Plantilla</button>
+                </div>
+
+                <!-- Contactos rápido -->
+                <div class="sidebar-card">
+                    <h3>👥 Lista de Difusión <span class="badge">5</span></h3>
+                    <div style="max-height:250px;overflow-y:auto;">
+                        <div class="contact-item"><div class="info"><strong>Cafetería Sol</strong><small>María · <span class="phone">+34 612345678</span></small></div></div>
+                        <div class="contact-item"><div class="info"><strong>Restaurante Luna</strong><small>Pedro · <span class="phone">+34 623456789</span></small></div></div>
+                        <div class="contact-item"><div class="info"><strong>Tech Corp</strong><small>Alice · <span class="phone">+34 600000000</span></small></div></div>
+                        <div class="contact-item"><div class="info"><strong>Despacho García</strong><small>Luis · <span class="phone">+34 634567890</span></small></div></div>
+                        <div class="contact-item"><div class="info"><strong>Gimnasio Fit</strong><small>Ana · <span class="phone">+34 645678901</span></small></div></div>
+                    </div>
+                    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+                    <div class="form-row">
+                        <input type="text" placeholder="Empresa">
+                        <input type="text" placeholder="Contacto">
+                    </div>
+                    <div class="form-row-phone">
+                        <select><option>+34</option><option>+1</option><option>+44</option></select>
+                        <input type="tel" placeholder="WhatsApp">
+                        <button class="btn btn-sm btn-success">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>MenuSpreader — Mockup estático · <a href="https://github.com/MutenRos/MenuSpreader" target="_blank">GitHub</a></p>
+    </footer>
+</body>
+</html>
